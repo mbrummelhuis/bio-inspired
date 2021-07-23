@@ -1,7 +1,6 @@
 import gym
 from agent import Agent
 
-
 def main():
     env_name = "LunarLanderContinuous-v2" # Set environment
     number_episodes = 10 # Sets number of episodes
@@ -30,8 +29,6 @@ def main():
 
     env.close()
     return
-
-
 
 if __name__ == '__main__':
     main()
