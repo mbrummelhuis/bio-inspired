@@ -3,8 +3,14 @@
         "totalEpisodes": 1000,
         "episodeInterval": 25,
         "visual": true,
-        "hyperparameters": {
-            "tau": 0.001
+        "agent": {
+            "alpha": 0.00025,
+            "beta": 0.00025,
+            "tau": 0.001,
+            "batchSize": 64,
+            "layers": 2,
+            "layer1Size": 100,
+            "layer2Size": 20
         }
     }
 }

@@ -1,11 +1,15 @@
 from ddpg import Agent
 import gym
 import numpy as np
-from utils import plotLearning, displayTimeEstimate
+from utils import getConfig, plotLearning, displayTimeEstimate
 from datetime import datetime
 import json
 
 env = gym.make('LunarLanderContinuous-v2')
+
+config_filename = 'config.json'
+config = getConfig(config_filename)
+# How do python dictionaries work?
 
 # All these inputs should become hyperparameters too
 agent = Agent(alpha=0.00025, beta=0.00025, input_dims=[8], tau=0.001, env=env, batch_size=64, layer1_size=400, layer2_size=300, n_actions=2)
@@ -45,6 +49,8 @@ for episode in range(total_episodes):
     
     filename = 'lunar-lander.png'
     plotLearning(score_history, filename, window=100)
+
+agent.save_models() # Save final model parameters
 
 print("Done!")
 print("Total time: ", datetime.now()-time_checkpoints[0])
