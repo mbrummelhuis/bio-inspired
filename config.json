@@ -1,0 +1,10 @@
+{ 
+    "settings": {
+        "totalEpisodes": 1000,
+        "episodeInterval": 25,
+        "visual": true,
+        "hyperparameters": {
+            "tau": 0.001
+        }
+    }
+}

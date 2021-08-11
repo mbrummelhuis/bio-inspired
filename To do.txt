@@ -1,3 +1,5 @@
 - Read up on DDPG and provide short explanation in report
-- Code up timekeeping function in utils
 - Create parameter file and source hyperparameters from there (network architecture, lr, no. episodes etc.)
+- Think up different network architectures and rewrite main script to try them all
+- Aggregate and plot all results
+- Comment code for better explanation
