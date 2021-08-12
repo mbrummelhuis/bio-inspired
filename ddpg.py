@@ -59,50 +59,66 @@ class ReplayBuffer(object):
         return states, actions, rewards, states_, terminal
 
 class CriticNetwork(nn.Module):
-    def __init__(self, lr, input_dims, fc1_dims, fc2_dims, n_actions, name,
-                 chkpt_dir='tmp'):
+    def __init__(self, config, input_dims, n_actions, name, chkpt_dir='checkpoints'):
         super(CriticNetwork, self).__init__()
         self.name = name
-
-        self.input_dims = input_dims
-        self.fc1_dims = fc1_dims
-        self.fc2_dims = fc2_dims
-        self.n_actions = n_actions
         self.checkpoint_file = os.path.join(chkpt_dir,self.name+'_ddpg')
-
-        self.fc1 = nn.Linear(self.input_dims, self.fc1_dims)
-        f1 = 1./np.sqrt(self.fc1.weight.data.size()[0])
-        T.nn.init.uniform_(self.fc1.weight.data, -f1, f1)
-        T.nn.init.uniform_(self.fc1.bias.data, -f1, f1)
-        self.bn1 = nn.LayerNorm(self.fc1_dims)
-
-        self.fc2 = nn.Linear(self.fc1_dims, self.fc2_dims)
-        f2 = 1./np.sqrt(self.fc2.weight.data.size()[0])
-        T.nn.init.uniform_(self.fc2.weight.data, -f2, f2)
-        T.nn.init.uniform_(self.fc2.bias.data, -f2, f2)
-        self.bn2 = nn.LayerNorm(self.fc2_dims)
-
-        self.action_value = nn.Linear(self.n_actions, self.fc2_dims)
-        f3 = 0.003
-        self.q = nn.Linear(self.fc2_dims, 1)
-        T.nn.init.uniform_(self.q.weight.data, -f3, f3)
-        T.nn.init.uniform_(self.q.bias.data, -f3, f3)
-
-        self.optimizer = optim.Adam(self.parameters(), lr=lr)
         self.device = T.device('cuda:0' if T.cuda.is_available() else 'cpu')
+
+        self.number_layers = len(config['hidden_layer_sizes'])
+        self.input_dims = input_dims
+        self.layers = {}
+
+        for layer in range(self.number_layers):
+            layer_name = 'fc' + str(layer+1)
+            batch_norm_name = 'bn'+ str(layer+1)
+            f_val = 'f' + str(layer+1)
+
+            if layer == 0: # If first layer, use input_dims
+                self.layers[layer_name] = nn.Linear(self.input_dims, config['hidden_layer_sizes'][0])
+                f1 = 1./np.sqrt(self.layers[layer_name].weight.data.size()[0])
+                T.nn.init.uniform_(self.layers[layer_name].weight.data, -f1, f1) # Check what this does and if we need it
+                T.nn.init.uniform_(self.layers[layer_name].bias.data, -f1, f1) # Check what this does and if we need it
+                self.bn1 = nn.LayerNorm(config['hidden_layer_sizes'][0])
+                self.layers[batch_norm_name] = nn.LayerNorm(config['hidden_layer_sizes'][0])
+
+            elif layer == self.number_layers: # If last layer, use n_actions
+                self.layers[layer_name] = nn.Linear(n_actions, config['hidden_layer_sizes'][self.number_layers-1])
+                f_last = config['f_last']
+                self.layers['q'] = nn.Linear(config['hidden_layer_sizes'][self.number_layers-1], 1)
+                T.nn.init.uniform_(self.layers[layer_name].weight.data, -f_last, f_last) # Check what this does and if we need it
+                T.nn.init.uniform_(self.layers[layer_name].bias.data, -f_last, f_last) # Check what this does and if we need it
+            
+            else:
+                self.layers[layer_name] = nn.Linear(config['hidden_layer_sizes'][layer], \
+                    config['hidden_layer_sizes'][layer+1])
+                self.layers[f_val] = 1./np.sqrt(self.layers[layer_name].weight.data.size()[0])
+                T.nn.init.uniform_(self.layers[layer_name].weight.data, \
+                    -self.layers[f_val], self.layers[f_val]) # Check what this does and if we need it
+                T.nn.init.uniform_(self.layers[layer_name].bias.data, \
+                    -self.layers[f_val], self.layers[f_val]) # Check what this does and if we need it
+                self.layers[batch_norm_name] = nn.LayerNorm(config['hidden_layer_sizes'][layer+1])
+
+        self.optimizer = optim.Adam(self.parameters(), lr=config['lr'])
 
         self.to(self.device)
 
     def forward(self, state, action):
-        state_value = self.fc1(state)
-        state_value = self.bn1(state_value)
-        state_value = F.relu(state_value)
-        state_value = self.fc2(state_value)
-        state_value = self.bn2(state_value)
+        state_value = state
 
-        action_value = F.relu(self.action_value(action))
-        state_action_value = F.relu(T.add(state_value, action_value))
-        state_action_value = self.q(state_action_value)
+        for layer in range(self.number_layers+1):
+            layer_name = 'fc' + str(layer+1)
+            batch_norm_name = 'bn'+ str(layer+1)        
+            state_value = self.layers[layer_name](state_value)
+            state_value = self.layers[batch_norm_name](state_value)
+            
+            if layer == self.number_layers:
+                action_value = F.relu(self.layers[layer_name](action))
+                state_action_value = F.relu(T.add(state_value, action_value))
+                state_action_value = self.layers['q'](state_action_value)
+                break
+            else:
+                state_value = F.relu(state_value)
 
         return state_action_value
 
@@ -124,45 +140,54 @@ class ActorNetwork(nn.Module):
 
         self.number_layers = len(config['hidden_layer_sizes'])
         self.input_dims = input_dims
-        self.hidden_layers = {}
+        self.layers = {}
 
-        for layer in range(self.number_layers):
+        # Here, the network is constructed according to the settings of the config file
+        for layer in range(self.number_layers + 1):
             layer_name = 'fc' + str(layer+1)
+            batch_norm_name = 'bn'+ str(layer+1)
+            f_val = 'f' + str(layer+1)
 
             if layer == 0: # If first layer, use input_dims
-                self.hidden_layers[layer_name] = nn.Linear(self.input_dims, config['hidden_layer_sizes'][0])
-                f1 = 1./np.sqrt(self.hidden_layers[layer_name].weight.data.size()[0])
-                T.nn.init.uniform_(self.hidden_layers[layer_name].weight.data, -f1, f1)
-                T.nn.init.uniform_(self.hidden_layers[layer_name].bias.data, -f1, f1)
-                self.bn1 = nn.LayerNorm(self.fc1_dims)
+                self.layers[layer_name] = nn.Linear(self.input_dims, config['hidden_layer_sizes'][0])
+                f1 = 1./np.sqrt(self.layers[layer_name].weight.data.size()[0])
+                T.nn.init.uniform_(self.layers[layer_name].weight.data, -f1, f1) # Check what this does and if we need it
+                T.nn.init.uniform_(self.layers[layer_name].bias.data, -f1, f1) # Check what this does and if we need it
+                self.bn1 = nn.LayerNorm(self.config['hidden_layer_sizes'][0])
+                self.layers[batch_norm_name] = nn.LayerNorm(config['hidden_layer_sizes'][0])
 
-            elif layer == self.number_layers-1: # If last layer, use n_actions
-                self.hidden_layers[layer_name] = nn.Linear(config['hidden_layer_sizes'][self.number_layers-1], n_actions)
+            elif layer == self.number_layers: # If last layer, use n_actions
+                self.layers[layer_name] = nn.Linear(config['hidden_layer_sizes'][self.number_layers-1], n_actions)
                 f_last = config['f_last']
-                T.nn.init.uniform_(self.hidden_layers[layer_name].weight.data, -f_last, f_last)
-                T.nn.init.uniform_(self.hidden_layers[layer_name].bias.data, -f_last, f_last)
+                T.nn.init.uniform_(self.layers[layer_name].weight.data, -f_last, f_last) # Check what this does and if we need it
+                T.nn.init.uniform_(self.layers[layer_name].bias.data, -f_last, f_last) # Check what this does and if we need it
             
             else:
-                self.hidden_layers[layer_name] = nn.Linear(config['hidden_layer_sizes'][layer],config['hidden_layer_sizes'][layer+1])
-
-        self.fc2 = nn.Linear(self.fc1_dims, self.fc2_dims)
-        f2 = 1./np.sqrt(self.fc2.weight.data.size()[0])
-        T.nn.init.uniform_(self.fc2.weight.data, -f2, f2)
-        T.nn.init.uniform_(self.fc2.bias.data, -f2, f2)
-        self.bn2 = nn.LayerNorm(self.fc2_dims)
+                self.layers[layer_name] = nn.Linear(config['hidden_layer_sizes'][layer], \
+                    config['hidden_layer_sizes'][layer+1])
+                self.layers[f_val] = 1./np.sqrt(self.layers[layer_name].weight.data.size()[0])
+                T.nn.init.uniform_(self.layers[layer_name].weight.data, \
+                    -self.layers[f_val], self.layers[f_val]) # Check what this does and if we need it
+                T.nn.init.uniform_(self.layers[layer_name].bias.data, \
+                    -self.layers[f_val], self.layers[f_val]) # Check what this does and if we need it
+                self.layers[batch_norm_name] = nn.LayerNorm(config['hidden_layer_sizes'][layer+1])
 
         self.optimizer = optim.Adam(self.parameters(), lr=config['lr'])
 
         self.to(self.device)
 
     def forward(self, state):
-        x = self.fc1(state)
-        x = self.bn1(x)
-        x = F.relu(x)
-        x = self.fc2(x)
-        x = self.bn2(x)
-        x = F.relu(x)
-        x = T.tanh(self.mu(x))
+        x = state
+
+        for layer in range(self.number_layers+1):
+            layer_name = 'fc' + str(layer+1)
+            batch_norm_name = 'bn'+ str(layer+1)
+
+            x = self.layers[layer_name](x)
+            x = self.layers[batch_norm_name](x)
+            x = F.relu(x)
+
+        x = T.tanh(self.layers[layer_name](x))
 
         return x
 
