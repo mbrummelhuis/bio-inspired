@@ -1,16 +1,20 @@
-{ 
+{
     "settings": {
-        "totalEpisodes": 1000,
-        "episodeInterval": 25,
+        "total_episodes": 1000,
+        "episode_interval": 25,
         "visual": true,
+        "env_name": "LunarLanderContinuous-v2",
         "agent": {
-            "alpha": 0.00025,
-            "beta": 0.00025,
+            "gamma": 0.99,
             "tau": 0.001,
-            "batchSize": 64,
-            "layers": 2,
-            "layer1Size": 100,
-            "layer2Size": 20
-        }
+            "max_mem_size": 1000000,
+            "batch_size": 64,
+            "network": {
+                "lr": 0.00025,
+                "hidden_layer_sizes": [400, 300],
+                "hidden_layer_activation": "relu",
+                "f_last": 0.003
+                }
+            }
     }
 }

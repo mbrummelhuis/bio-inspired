@@ -51,15 +51,16 @@ def displayTimeEstimate(time_list, episodes_interval=10, total_episodes=1000):
     return time_list
 
 def getConfig(filename,verbose=True):
-    ''' Get JSON config file with hyperparameters and settings
+    ''' Get JSON config file with hyperparameters and settings and print in terminal if verbose (for checking)
     Input
     filename    str     Name of the config file including extension
+    verbose     bool    If true, prints config contents when called
 
     Returns
     config      dict    Configuration data
     '''
     with open(filename) as f:
-        config = json.loads(f)
+        config = json.load(f)
     
     if verbose:
         print("---CONFIG CONTENTS---")
