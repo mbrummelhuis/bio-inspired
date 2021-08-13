@@ -39,7 +39,7 @@ def displayTimeEstimate(time_list, episodes_interval=10, total_episodes=1000):
     total_time_elapsed = now - time_list[0]
 
     print("Time of last", episodes_interval, "episodes:", time_elapsed)
-    print("Elapsed time: ", total_time_elapsed)
+    print("Total elapsed time: ", total_time_elapsed)
 
     episode_number = len(time_list) * episodes_interval
     time_estimate = total_time_elapsed / episode_number * total_episodes

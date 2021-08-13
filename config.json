@@ -2,7 +2,7 @@
     "settings": {
         "total_episodes": 1000,
         "episode_interval": 25,
-        "visual": true,
+        "visual": false,
         "env_name": "LunarLanderContinuous-v2",
         "agent": {
             "gamma": 0.99,
@@ -11,8 +11,7 @@
             "batch_size": 64,
             "network": {
                 "lr": 0.00025,
-                "hidden_layer_sizes": [400, 300],
-                "hidden_layer_activation": "relu",
+                "hidden_layer_sizes": [400, 300, 300],
                 "f_last": 0.003
                 }
             }

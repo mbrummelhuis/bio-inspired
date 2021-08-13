@@ -1,7 +1,18 @@
+REPORT
+- Come up with actual experiment to do and document
 - Read up on DDPG and provide short explanation in report
-- Bugfix changes to ddpg.py
+- Explain how network construction works
+- Report results
+- Write conclusion
+
+CODE
 - Think up different network architectures and rewrite main script to try them all
 - Aggregate and plot all results
 - Comment code for better explanation
+- Elaborate readme
 
+OPTIONAL
 - Add function to play lunarlander game with pretrained network
+- Fix that the network can run on GPU (to do this, the dict containing the layers in the network classes
+needs to be changed such that the layers are a direct attribute of the network classes --> construct dynamic variable names)
+- Change network constructor such that activation function can be specified from config.json
