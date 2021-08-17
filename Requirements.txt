@@ -1,0 +1,7 @@
+Pytorch (torch)
+numpy
+pathlib             
+datetime            
+gym[box2d]
+json
+matplotlib
