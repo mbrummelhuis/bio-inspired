@@ -50,7 +50,7 @@ def LunarLanderMain(config_name):
             time_checkpoints = displayTimeEstimate(time_checkpoints, \
                 episodes_interval=episodes_interval,total_episodes=total_episodes)
         
-        filename = os.path.join("Results",config['settings']['agent']['save_directory'], 'score_plot.png')
+        filename = os.path.join(config['settings']['agent']['save_directory'], 'score_plot.png')
         plotLearning(score_history, filename, window=100)
 
     agent.save_models() # Save final model parameters

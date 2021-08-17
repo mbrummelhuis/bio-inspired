@@ -1,3 +1,4 @@
+import os
 import json
 import time
 from LunarLanderMain import LunarLanderMain
@@ -9,11 +10,14 @@ learning_rates = [0.0025, 0.00025, 0.00025]
 
 tau_values = [0.1, 0.001, 0.0001]
 
-architectures = [[400, 300], 
-                [800, 600], 
-                [400, 300, 300], 
-                [800, 600, 600],
-                [200, 250, 150, 80, 50]]
+architectures = [[25], # Single layer, very small number of neurons
+                [250], # Singe layer, medium number of neurons
+                [1000], # Single layer, large number of neurons
+                [40, 30], # Double layer, small number of neurons
+                [400, 300], # Double layer, medium number of neurons and the architecture used in the DDPG paper
+                [1000, 800], # Double layer, large number of neurons
+                [40, 40, 25], # Quad layer, small number of neurons
+                [500, 400, 250]] # Quad layer, large number of neurons
 
 tau_index = 0
 lr_index = 0
@@ -56,7 +60,7 @@ for tau in tau_values:
             arch_index += 1
             print("Architecture: ", architecture)
 
-            save_name = "Results_t" + str(tau_index) + "l" + str(lr_index) + "a" + str(arch_index)
+            save_name = os.path.join("results","Results_t" + str(tau_index) + "l" + str(lr_index) + "a" + str(arch_index))
 
             with open(filename) as f:
                 config = json.load(f)

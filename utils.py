@@ -14,6 +14,7 @@ def plotLearning(scores, filename, x=None, window=5):
     x           list    X values against which to plot, if None, list equals length of scores
     window      int     Length of window over which to plot running average
     '''
+    
     N = len(scores)
     running_avg = np.empty(N)
     for t in range(N):
@@ -22,9 +23,10 @@ def plotLearning(scores, filename, x=None, window=5):
         x = [i for i in range(N)]
     plt.ylabel('Score')       
     plt.xlabel('Game')                     
-    plt.plot(x, running_avg,color='b')
-    plt.plot(x, scores,color='r',linewidth=0.01)
+    plt.plot(x, running_avg,color='b',linewidth=0.8)
+    plt.plot(x, scores,color='r',linewidth=0.2)
     plt.savefig(filename)
+    plt.clf()
 
 def displayTimeEstimate(time_list, episodes_interval=10, total_episodes=1000):
     ''' Keeps and displays the time estimates of the script
