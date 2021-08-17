@@ -1,14 +1,18 @@
+import os
 from ddpg import Agent
 import gym
 import numpy as np
-from utils import getConfig, plotLearning, displayTimeEstimate
+from utils import getConfig, saveConfig, plotLearning, displayTimeEstimate, saveScores
 from datetime import datetime
 from pathlib import Path
+import csv
 
 def LunarLanderMain(config_name):
     config = getConfig(config_name)
 
     Path(config["settings"]["agent"]["save_directory"]).mkdir(parents=True, exist_ok=True)
+
+    saveConfig(config_name)
 
     env = gym.make(config['settings']['env_name'])
 
@@ -46,10 +50,11 @@ def LunarLanderMain(config_name):
             time_checkpoints = displayTimeEstimate(time_checkpoints, \
                 episodes_interval=episodes_interval,total_episodes=total_episodes)
         
-        filename = 'lunar-lander.png'
+        filename = os.path.join("Results",config['settings']['agent']['save_directory'], 'score_plot.png')
         plotLearning(score_history, filename, window=100)
 
     agent.save_models() # Save final model parameters
+    saveScores(score_history, config['settings']['agent']['save_directory'])
 
     print("Done training!")
     print("Total time: ", datetime.now()-time_checkpoints[0])

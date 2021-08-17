@@ -6,10 +6,11 @@ REPORT
 - Write conclusion
 
 CODE
-- Think up different network architectures and rewrite main script to try them all
+- Think up different network architectures
 - Aggregate and plot all results
 - Comment code for better explanation
 - Elaborate readme
+- Delete to do from final code push
 
 OPTIONAL
 - Add function to play lunarlander game with pretrained network

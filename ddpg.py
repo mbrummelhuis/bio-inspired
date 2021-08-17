@@ -59,10 +59,10 @@ class ReplayBuffer(object):
         return states, actions, rewards, states_, terminal
 
 class CriticNetwork(nn.Module):
-    def __init__(self, config, input_dims, n_actions, name, chkpt_dir='checkpoints'):
+    def __init__(self, config, input_dims, n_actions, name):
         super(CriticNetwork, self).__init__()
         self.name = name
-        self.checkpoint_file = os.path.join(chkpt_dir,self.name+'_ddpg')
+        self.checkpoint_file =self.name+'_ddpg'
 
         self.number_layers = len(config['hidden_layer_sizes'])
         self.input_dims = input_dims
@@ -76,8 +76,8 @@ class CriticNetwork(nn.Module):
             if layer == 0: # If first layer, use input_dims
                 self.layers[layer_name] = nn.Linear(self.input_dims, config['hidden_layer_sizes'][0])
                 f1 = 1./np.sqrt(self.layers[layer_name].weight.data.size()[0])
-                T.nn.init.uniform_(self.layers[layer_name].weight.data, -f1, f1) # Check what this does and if we need it
-                T.nn.init.uniform_(self.layers[layer_name].bias.data, -f1, f1) # Check what this does and if we need it
+                T.nn.init.uniform_(self.layers[layer_name].weight.data, -f1, f1) 
+                T.nn.init.uniform_(self.layers[layer_name].bias.data, -f1, f1) 
                 self.bn1 = nn.LayerNorm(config['hidden_layer_sizes'][0])
                 self.layers[batch_norm_name] = nn.LayerNorm(config['hidden_layer_sizes'][0])
 
@@ -85,22 +85,22 @@ class CriticNetwork(nn.Module):
                 self.layers[layer_name] = nn.Linear(n_actions, config['hidden_layer_sizes'][self.number_layers-1])
                 f_last = config['f_last']
                 self.layers['q'] = nn.Linear(config['hidden_layer_sizes'][self.number_layers-1], 1)
-                T.nn.init.uniform_(self.layers[layer_name].weight.data, -f_last, f_last) # Check what this does and if we need it
-                T.nn.init.uniform_(self.layers[layer_name].bias.data, -f_last, f_last) # Check what this does and if we need it
+                T.nn.init.uniform_(self.layers[layer_name].weight.data, -f_last, f_last) 
+                T.nn.init.uniform_(self.layers[layer_name].bias.data, -f_last, f_last) 
             
             else:
                 self.layers[layer_name] = nn.Linear(config['hidden_layer_sizes'][layer-1], \
                     config['hidden_layer_sizes'][layer])
                 self.layers[f_val] = 1./np.sqrt(self.layers[layer_name].weight.data.size()[0])
                 T.nn.init.uniform_(self.layers[layer_name].weight.data, \
-                    -self.layers[f_val], self.layers[f_val]) # Check what this does and if we need it
+                    -self.layers[f_val], self.layers[f_val]) 
                 T.nn.init.uniform_(self.layers[layer_name].bias.data, \
-                    -self.layers[f_val], self.layers[f_val]) # Check what this does and if we need it
+                    -self.layers[f_val], self.layers[f_val]) 
                 self.layers[batch_norm_name] = nn.LayerNorm(config['hidden_layer_sizes'][layer])
 
         self.optimizer = optim.Adam(self.parameters(), lr=config['lr'])
 
-        self.device = 'cpu' #T.device('cuda:0' if T.cuda.is_available() else 'cpu')
+        self.device = 'cpu'
         self.to(self.device)
 
     def forward(self, state, action):
@@ -126,20 +126,22 @@ class CriticNetwork(nn.Module):
 
         return state_action_value
 
-    def save_checkpoint(self):
+    def save_checkpoint(self, save_dir):
         print('... saving checkpoint of network ', self.name)
-        T.save(self.state_dict(), self.checkpoint_file)
+        filename = os.path.join(save_dir, self.checkpoint_file)
+        T.save(self.state_dict(), filename)
 
-    def load_checkpoint(self):
+    def load_checkpoint(self, save_dir):
         print('... loading checkpoint of network ', self.name)
-        self.load_state_dict(T.load(self.checkpoint_file))
+        filename = os.path.join(save_dir, self.checkpoint_file)
+        self.load_state_dict(T.load(filename))
 
 class ActorNetwork(nn.Module):
-    def __init__(self, config, input_dims, n_actions, name, chkpt_dir='checkpoints'):
+    def __init__(self, config, input_dims, n_actions, name):
         super(ActorNetwork, self).__init__()
 
         self.name = name
-        self.checkpoint_file = os.path.join(chkpt_dir,self.name+'_ddpg')
+        self.checkpoint_file = self.name+'_ddpg'
 
         self.number_layers = len(config['hidden_layer_sizes'])
         self.input_dims = input_dims
@@ -154,30 +156,30 @@ class ActorNetwork(nn.Module):
             if layer == 0: # If first layer, use input_dims
                 self.layers[layer_name] = nn.Linear(self.input_dims, config['hidden_layer_sizes'][0])
                 f1 = 1./np.sqrt(self.layers[layer_name].weight.data.size()[0])
-                T.nn.init.uniform_(self.layers[layer_name].weight.data, -f1, f1) # Check what this does and if we need it
-                T.nn.init.uniform_(self.layers[layer_name].bias.data, -f1, f1) # Check what this does and if we need it
+                T.nn.init.uniform_(self.layers[layer_name].weight.data, -f1, f1) 
+                T.nn.init.uniform_(self.layers[layer_name].bias.data, -f1, f1) 
                 self.bn1 = nn.LayerNorm(config['hidden_layer_sizes'][0])
                 self.layers[batch_norm_name] = nn.LayerNorm(config['hidden_layer_sizes'][0])
 
             elif layer == self.number_layers: # If last layer, use n_actions
                 self.layers[layer_name] = nn.Linear(config['hidden_layer_sizes'][self.number_layers-1], n_actions)
                 f_last = config['f_last']
-                T.nn.init.uniform_(self.layers[layer_name].weight.data, -f_last, f_last) # Check what this does and if we need it
-                T.nn.init.uniform_(self.layers[layer_name].bias.data, -f_last, f_last) # Check what this does and if we need it
+                T.nn.init.uniform_(self.layers[layer_name].weight.data, -f_last, f_last) 
+                T.nn.init.uniform_(self.layers[layer_name].bias.data, -f_last, f_last) 
             
             else:
                 self.layers[layer_name] = nn.Linear(config['hidden_layer_sizes'][layer-1], \
                     config['hidden_layer_sizes'][layer])
                 self.layers[f_val] = 1./np.sqrt(self.layers[layer_name].weight.data.size()[0])
                 T.nn.init.uniform_(self.layers[layer_name].weight.data, \
-                    -self.layers[f_val], self.layers[f_val]) # Check what this does and if we need it
+                    -self.layers[f_val], self.layers[f_val]) 
                 T.nn.init.uniform_(self.layers[layer_name].bias.data, \
-                    -self.layers[f_val], self.layers[f_val]) # Check what this does and if we need it
+                    -self.layers[f_val], self.layers[f_val]) 
                 self.layers[batch_norm_name] = nn.LayerNorm(config['hidden_layer_sizes'][layer])
 
         self.optimizer = optim.Adam(self.parameters(), lr=config['lr'])
 
-        self.device = 'cpu' #T.device('cuda:0' if T.cuda.is_available() else 'cpu')
+        self.device = 'cpu'
         self.to(self.device)
 
     def forward(self, state):
@@ -197,13 +199,15 @@ class ActorNetwork(nn.Module):
 
         return x
 
-    def save_checkpoint(self):
+    def save_checkpoint(self, save_dir):
         print('... saving checkpoint of network ', self.name)
-        T.save(self.state_dict(), self.checkpoint_file)
+        filename = os.path.join(save_dir, self.checkpoint_file)
+        T.save(self.state_dict(), filename)
 
-    def load_checkpoint(self):
+    def load_checkpoint(self, save_dir):
         print('... loading checkpoint of network', self.name)
-        self.load_state_dict(T.load(self.checkpoint_file))
+        filename = os.path.join(save_dir, self.checkpoint_file)
+        self.load_state_dict(T.load(filename))
 
 class Agent(object):
     def __init__(self,config,env):
@@ -213,6 +217,8 @@ class Agent(object):
         self.n_actions = int(env.action_space.shape[0])
         self.memory = ReplayBuffer(config['max_mem_size'], self.input_dims, self.n_actions)
         self.batch_size = config['batch_size']
+
+        self.save_dir = config["save_directory"]
 
         # To keep everything manageable, we only use one network architecture for all networks
         self.actor = ActorNetwork(config['network'], self.input_dims, self.n_actions, name='Actor')
@@ -321,16 +327,16 @@ class Agent(object):
         input()
         """
     def save_models(self):
-        self.actor.save_checkpoint()
-        self.target_actor.save_checkpoint()
-        self.critic.save_checkpoint()
-        self.target_critic.save_checkpoint()
+        self.actor.save_checkpoint(self.save_dir)
+        self.target_actor.save_checkpoint(self.save_dir)
+        self.critic.save_checkpoint(self.save_dir)
+        self.target_critic.save_checkpoint(self.save_dir)
 
     def load_models(self):
-        self.actor.load_checkpoint()
-        self.target_actor.load_checkpoint()
-        self.critic.load_checkpoint()
-        self.target_critic.load_checkpoint()
+        self.actor.load_checkpoint(self.save_dir)
+        self.target_actor.load_checkpoint(self.save_dir)
+        self.critic.load_checkpoint(self.save_dir)
+        self.target_critic.load_checkpoint(self.save_dir)
 
     def check_actor_params(self):
         current_actor_params = self.actor.named_parameters()

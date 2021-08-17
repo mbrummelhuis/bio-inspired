@@ -1,12 +1,1 @@
-{"settings": {"total_episodes": 1000, 
-    "episode_interval": 25, 
-    "visual": false, 
-    "env_name": "LunarLanderContinuous-v2", 
-    "agent": {"gamma": 0.99, 
-        "tau": 0.1, 
-        "max_mem_size": 1000000, 
-        "batch_size": 64, 
-        "save_directory": "Experiment_t1l1a1", 
-        "network": {"lr": 0.0025, 
-            "hidden_layer_sizes": [400, 300], 
-            "f_last": 0.003}}}}
+{"settings": {"total_episodes": 20, "episode_interval": 10, "visual": false, "env_name": "LunarLanderContinuous-v2", "agent": {"gamma": 0.99, "tau": 0.1, "max_mem_size": 1000000, "batch_size": 64, "save_directory": "Experiment_t1l3a10", "network": {"lr": 0.00025, "hidden_layer_sizes": [400, 300], "f_last": 0.003}}}}

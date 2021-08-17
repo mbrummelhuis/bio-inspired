@@ -10,7 +10,10 @@ config.json
 This file contains all the hyperparameters governing the neural network architecture and training.
 
 
-
+CPU vs GPU implementation
+Unfortunately, due to the dictionary-based building of the layers in the ActorNetwork and CriticNetwork classes, it is not possible to move the network reliably \
+to the GPU, and therefore it is only possible to run the networks on the CPU. An interesting observation is that the CPU implementation seems to be quite a bit \
+faster for smaller networks than the GPU implementation.
 
 
 Credits to MachineLearningwithPhil for programming tutorials

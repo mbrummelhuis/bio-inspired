@@ -1,6 +1,7 @@
 import json
 import time
 from LunarLanderMain import LunarLanderMain
+from datetime import datetime
 
 filename = 'config.json'
 
@@ -14,24 +15,32 @@ architectures = [[400, 300],
                 [800, 600, 600],
                 [200, 250, 150, 80, 50]]
 
-tau_index = 1
-lr_index = 1
-arch_index = 1
+tau_index = 0
+lr_index = 0
+arch_index = 0
+
+begin_time = datetime.now()
 
 # Loop over different values for tau
 for tau in tau_values:
+    tau_index +=1
+    print("Tau: ", tau)
+
     with open(filename) as f:
         config = json.load(f)
 
-    config["settings"]["agent"]["tau"] = lr
+    config["settings"]["agent"]["tau"] = tau
     json_file = open(filename, "w")
     json.dump(config, json_file)
     json_file.close()
-    time.sleep(10)
+    time.sleep(5)
 
-
+    lr_index = 0
 # Loop over different learning rates
     for lr in learning_rates:
+        lr_index += 1
+        print("Learning rate: ", lr)
+
         with open(filename) as f:
             config = json.load(f)
 
@@ -39,11 +48,15 @@ for tau in tau_values:
         json_file = open(filename, "w")
         json.dump(config, json_file)
         json_file.close()
-        time.sleep(10)
+        time.sleep(5)
 
+        arch_index = 0
         # Loop over different architectures
         for architecture in architectures:
-            save_name = "Experiment_t" + str(tau_index) + "l" + str(lr_index) + "a" + str(arch_index)
+            arch_index += 1
+            print("Architecture: ", architecture)
+
+            save_name = "Results_t" + str(tau_index) + "l" + str(lr_index) + "a" + str(arch_index)
 
             with open(filename) as f:
                 config = json.load(f)
@@ -56,6 +69,9 @@ for tau in tau_values:
             json_file = open(filename, "w")
             json.dump(config, json_file)
             json_file.close()
-            time.sleep(10)
+            time.sleep(5)
 
-            LunarLanderMain(config) # Execute training
+            LunarLanderMain(filename) # Execute training
+
+print("Experiments finished!")
+print("Total experiment time is: ", begin_time -  datetime.now())

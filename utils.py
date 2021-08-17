@@ -1,7 +1,10 @@
+import os
 import matplotlib.pyplot as plt 
 import numpy as np
 from datetime import datetime
 import json
+import csv
+import time
 
 def plotLearning(scores, filename, x=None, window=5):   
     ''' Plot scores and running average of scores against episodes
@@ -51,7 +54,8 @@ def displayTimeEstimate(time_list, episodes_interval=10, total_episodes=1000):
     return time_list
 
 def getConfig(filename,verbose=True):
-    ''' Get JSON config file with hyperparameters and settings and print in terminal if verbose (for checking)
+    ''' Get JSON config file with hyperparameters and settings and print in terminal if verbose (for checking).
+
     Input
     filename    str     Name of the config file including extension
     verbose     bool    If true, prints config contents when called
@@ -67,3 +71,39 @@ def getConfig(filename,verbose=True):
         print(config)
 
     return config
+
+def saveConfig(filename='config.json'):
+    ''' Saves config file into results directory for future reference
+
+    Input
+    filename    str     Name of the config file including extension
+    '''
+    with open(filename) as f:
+        config = json.load(f)
+    
+    save_dir = config['settings']['agent']['save_directory']
+    save_path = os.path.join(save_dir, filename)
+
+    json_file = open(save_path, "w")
+    json.dump(config, json_file)
+    json_file.close()
+    return
+
+def saveScores(scores,save_dir=None):
+    ''' Saves scores to csv file
+
+    Input
+    scores      lst     List of scores acquired during training
+    save_dir    str     Name of the directory in which to save the csv file      
+    '''
+
+    if save_dir is not None:
+        filename = os.path.join(save_dir, 'scores.csv')
+    else:
+        filename = 'scores.csv'
+    
+    with open(filename, 'w') as f:
+        write = csv.writer(f)
+        write.writerow(scores)
+    
+    return
