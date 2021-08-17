@@ -1,3 +1,5 @@
+Implementation and ablation study of the DDPG Reinforcement Learning algorithm for OpenAI gym's LunarLanderContinuous-v2 environment.
+
 This is the git repository used for the assignment of the course AE4350 Bio-Inspired Intelligence and Learning for Aerospace Applications from the faculty of Aerospace Engineering at Delft University of Technology.
 It follows an implementation of the DDPG paper by DeepMind, using the code from Phil Tabor (link his repo), along with some alterations I made myself for this assignment.
 Below is an overview of the code structure and in short what I changed from mr. Tabor's code.
