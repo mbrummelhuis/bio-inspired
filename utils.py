@@ -20,7 +20,7 @@ def plotLearning(scores, filename, x=None, window=5):
     plt.ylabel('Score')       
     plt.xlabel('Game')                     
     plt.plot(x, running_avg,color='b')
-    plt.plot(x, scores,color='r')
+    plt.plot(x, scores,color='r',linewidth=0.01)
     plt.savefig(filename)
 
 def displayTimeEstimate(time_list, episodes_interval=10, total_episodes=1000):

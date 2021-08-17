@@ -3,9 +3,12 @@ import gym
 import numpy as np
 from utils import getConfig, plotLearning, displayTimeEstimate
 from datetime import datetime
+from pathlib import Path
 
 def LunarLanderMain(config_name):
     config = getConfig(config_name)
+
+    Path(config["settings"]["agent"]["save_directory"]).mkdir(parents=True, exist_ok=True)
 
     env = gym.make(config['settings']['env_name'])
 
@@ -50,3 +53,6 @@ def LunarLanderMain(config_name):
 
     print("Done training!")
     print("Total time: ", datetime.now()-time_checkpoints[0])
+
+if __name__ == '__main__':
+    LunarLanderMain('config.json')
