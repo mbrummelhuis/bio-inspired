@@ -2,7 +2,7 @@ import os
 from ddpg import Agent
 import gym
 import numpy as np
-from utils import getConfig, saveConfig, plotLearning, displayTimeEstimate, saveScores
+from utils import getConfig, saveConfig, plotLearning, displayTimeEstimate, saveScoresAndTime
 from datetime import datetime
 from pathlib import Path
 
@@ -53,7 +53,7 @@ def LunarLanderMain(config_name):
         plotLearning(score_history, filename, window=100)
 
     agent.save_models() # Save final model parameters
-    saveScores(score_history, config['settings']['agent']['save_directory'])
+    saveScoresAndTime(score_history, str(datetime.now()-time_checkpoints[0]), config['settings']['agent']['save_directory'])
 
     print("Done training!")
     print("Total time: ", datetime.now()-time_checkpoints[0])

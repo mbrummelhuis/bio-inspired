@@ -6,13 +6,11 @@ from datetime import datetime
 
 filename = 'config.json'
 
-#learning_rates = [0.0025, 0.00025, 0.00025]
-
 tau_values = [0.001]
 
 batch_size_values = [32, 64, 128]
 
-architectures = [[400, 300], [400, 300]]
+architectures = [[400, 300], [400, 300], [400, 300]]
 
 
                 # [[25], # Single layer, very small number of neurons
@@ -25,11 +23,11 @@ architectures = [[400, 300], [400, 300]]
                 # [500, 400, 250]] # Triple layer, large number of neurons
 
 tau_index = 0
-lr_index = 0
+batch_index = 0
 arch_index = 0
 
 begin_time = datetime.now()
-
+times =[]
 # Loop over different values for tau
 for tau in tau_values:
     tau_index +=1
@@ -47,6 +45,7 @@ for tau in tau_values:
     arch_index = 0
     # Loop over different architectures
     for architecture in architectures:
+        new_arch_begin_time = datetime.now()
         arch_index += 1
         print("Architecture: ", architecture)
 
@@ -66,6 +65,8 @@ for tau in tau_values:
         time.sleep(5)
 
         LunarLanderMain(filename) # Execute training
+
+        times.append(str(datetime.now()-new_arch_begin_time))
 
 print("Experiments finished!")
 print("Total experiment time is: ", datetime.now() - begin_time)

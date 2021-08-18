@@ -24,7 +24,6 @@ def plotLearning(scores, filename, x=None, window=5):
     plt.ylabel('Score')       
     plt.xlabel('Game')                     
     plt.plot(x, running_avg,color='b',linewidth=0.8)
-    plt.plot(x, scores,color='r',linewidth=0.2)
     plt.savefig(filename)
     plt.clf()
 
@@ -91,7 +90,7 @@ def saveConfig(filename='config.json'):
     json_file.close()
     return
 
-def saveScores(scores,save_dir=None):
+def saveScoresAndTime(scores,time,save_dir=None):
     ''' Saves scores to csv file
 
     Input
@@ -107,5 +106,6 @@ def saveScores(scores,save_dir=None):
     with open(filename, 'w') as f:
         write = csv.writer(f)
         write.writerow(scores)
+        write.writerow(time)
     
     return
