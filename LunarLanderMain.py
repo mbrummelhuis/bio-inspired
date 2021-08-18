@@ -21,7 +21,6 @@ def LunarLanderMain(config_name):
 
     agent = Agent(config['settings']['agent'],env)
 
-    #agent.loadmodels()
     np.random.seed(config['settings']['seed'])
 
     time_checkpoints = [datetime.now()]

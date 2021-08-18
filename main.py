@@ -10,6 +10,8 @@ filename = 'config.json'
 
 tau_values = [0.001]
 
+batch_size_values = [32, 64, 128]
+
 architectures = [[400, 300], [400, 300]]
 
 
@@ -42,15 +44,13 @@ for tau in tau_values:
     json_file.close()
     time.sleep(5)
 
-    lr_index = 0
-
     arch_index = 0
     # Loop over different architectures
     for architecture in architectures:
         arch_index += 1
         print("Architecture: ", architecture)
 
-        save_name = os.path.join("results","Results_t" + str(tau_index) + "l" + str(lr_index) + "a" + str(arch_index))
+        save_name = os.path.join("results","Results_t" + str(tau_index)  + "a" + str(arch_index))
 
         with open(filename) as f:
             config = json.load(f)

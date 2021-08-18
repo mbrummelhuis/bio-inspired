@@ -1,1 +1,0 @@
-{"settings": {"total_episodes": 2500, "episode_interval": 100, "visual": false, "env_name": "LunarLanderContinuous-v2", "seed": 7, "agent": {"gamma": 0.99, "tau": 0.001, "max_mem_size": 1000000, "batch_size": 64, "save_directory": "results\\Results_t1l0a1", "network": {"alpha": 0.0025, "beta": 0.00025, "hidden_layer_sizes": [400, 300], "f_last": 0.003}}}}

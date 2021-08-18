@@ -7,5 +7,4 @@ REPORT
 
 CODE
 - Elaborate readme
-- Change NN builder to if-statement based code to eliminate dictionary implementation
 - Delete to do from final code push

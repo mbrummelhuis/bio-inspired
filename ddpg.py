@@ -48,7 +48,7 @@ class ReplayBuffer(object):
     def sample_buffer(self, batch_size):
         max_mem = min(self.mem_cntr, self.mem_size)
 
-        batch = np.random.choice(max_mem, batch_size)
+        batch = np.random.choice(max_mem, size=batch_size)
 
         states = self.state_memory[batch]
         actions = self.action_memory[batch]
@@ -61,68 +61,88 @@ class ReplayBuffer(object):
 class CriticNetwork(nn.Module):
     def __init__(self, config, input_dims, n_actions, name):
         super(CriticNetwork, self).__init__()
+
+        
         self.name = name
-        self.checkpoint_file =self.name+'_ddpg'
-
-        self.number_layers = len(config['hidden_layer_sizes'])
         self.input_dims = input_dims
-        self.layers = {}
+        self.number_layers = len(config['hidden_layer_sizes'])
+        self.n_actions = n_actions
+        self.checkpoint_file = self.name+'_ddpg'
+        self.n_actions = n_actions
 
-        for layer in range(self.number_layers+1):
-            layer_name = 'fc' + str(layer+1)
-            batch_norm_name = 'bn'+ str(layer+1)
-            f_val = 'f' + str(layer+1)
+        self.fc1_dims = config['hidden_layer_sizes'][0]
+        if self.number_layers > 1:
+            self.fc2_dims = config['hidden_layer_sizes'][1]
+            if self.number_layers > 2:
+                self.fc3_dims = config['hidden_layer_sizes'][2]
 
-            if layer == 0: # If first layer, use input_dims
-                self.layers[layer_name] = nn.Linear(self.input_dims, config['hidden_layer_sizes'][0])
-                f1 = 1./np.sqrt(self.layers[layer_name].weight.data.size()[0])
-                T.nn.init.uniform_(self.layers[layer_name].weight.data, -f1, f1) 
-                T.nn.init.uniform_(self.layers[layer_name].bias.data, -f1, f1) 
-                self.bn1 = nn.LayerNorm(config['hidden_layer_sizes'][0])
-                self.layers[batch_norm_name] = nn.LayerNorm(config['hidden_layer_sizes'][0])
+        self.fc1 = nn.Linear(self.input_dims, self.fc1_dims)
+        f1 = 1./np.sqrt(self.fc1.weight.data.size()[0])
+        T.nn.init.uniform_(self.fc1.weight.data, -f1, f1)
+        T.nn.init.uniform_(self.fc1.bias.data, -f1, f1)
+        self.bn1 = nn.LayerNorm(self.fc1_dims)
 
-            elif layer == self.number_layers: # If last layer, use n_actions
-                self.layers[layer_name] = nn.Linear(n_actions, config['hidden_layer_sizes'][self.number_layers-1])
-                f_last = config['f_last']
-                self.layers['q'] = nn.Linear(config['hidden_layer_sizes'][self.number_layers-1], 1)
-                T.nn.init.uniform_(self.layers[layer_name].weight.data, -f_last, f_last) 
-                T.nn.init.uniform_(self.layers[layer_name].bias.data, -f_last, f_last) 
-            
-            else:
-                self.layers[layer_name] = nn.Linear(config['hidden_layer_sizes'][layer-1], \
-                    config['hidden_layer_sizes'][layer])
-                self.layers[f_val] = 1./np.sqrt(self.layers[layer_name].weight.data.size()[0])
-                T.nn.init.uniform_(self.layers[layer_name].weight.data, \
-                    -self.layers[f_val], self.layers[f_val]) 
-                T.nn.init.uniform_(self.layers[layer_name].bias.data, \
-                    -self.layers[f_val], self.layers[f_val]) 
-                self.layers[batch_norm_name] = nn.LayerNorm(config['hidden_layer_sizes'][layer])
+        if self.number_layers == 1:
+            self.action_value = nn.Linear(self.n_actions, self.fc1_dims)
+            f2 = 0.003
+            self.q = nn.Linear(self.fc1_dims, 1)
+            T.nn.init.uniform_(self.q.weight.data, -f2, f2)
+            T.nn.init.uniform_(self.q.bias.data, -f2, f2)
+        
+        if self.number_layers == 2:
+            self.fc2 = nn.Linear(self.fc1_dims, self.fc2_dims)
+            f2 = 1./np.sqrt(self.fc2.weight.data.size()[0])
+            T.nn.init.uniform_(self.fc2.weight.data, -f2, f2)
+            T.nn.init.uniform_(self.fc2.bias.data, -f2, f2)
+            self.bn2 = nn.LayerNorm(self.fc2_dims)
+
+            self.action_value = nn.Linear(self.n_actions, self.fc2_dims)
+            f3 = 0.003
+            self.q = nn.Linear(self.fc2_dims, 1)
+            T.nn.init.uniform_(self.q.weight.data, -f3, f3)
+            T.nn.init.uniform_(self.q.bias.data, -f3, f3)
+        
+        if self.number_layers == 3:
+            self.fc2 = nn.Linear(self.fc1_dims, self.fc2_dims)
+            f2 = 1./np.sqrt(self.fc2.weight.data.size()[0])
+            T.nn.init.uniform_(self.fc2.weight.data, -f2, f2)
+            T.nn.init.uniform_(self.fc2.bias.data, -f2, f2)
+            self.bn2 = nn.LayerNorm(self.fc2_dims)
+
+            self.fc3 = nn.Linear(self.fc2_dims, self.fc3_dims)
+            f3 = 1./np.sqrt(self.fc3.weight.data.size()[0])
+            T.nn.init.uniform_(self.fc3.weight.data, -f3, f3)
+            T.nn.init.uniform_(self.fc3.bias.data, -f3, f3)
+            self.bn3 = nn.LayerNorm(self.fc3_dims)
+
+            self.action_value = nn.Linear(self.n_actions, self.fc3_dims)
+            f4 = 0.003
+            self.q = nn.Linear(self.fc3_dims, 1)
+            T.nn.init.uniform_(self.q.weight.data, -f4, f4)
+            T.nn.init.uniform_(self.q.bias.data, -f4, f4)
+
 
         self.optimizer = optim.Adam(self.parameters(), lr=config['beta'])
+        self.device = T.device('cuda:0' if T.cuda.is_available() else 'cpu')
 
-        self.device = 'cpu'
         self.to(self.device)
 
     def forward(self, state, action):
-        state_value = state
+        state_value = self.fc1(state)
+        state_value = self.bn1(state_value)
 
-        for layer in range(self.number_layers+1):
-            layer_name = 'fc' + str(layer+1)
-            batch_norm_name = 'bn'+ str(layer+1)  
+        if self.number_layers > 1:
+            state_value = F.relu(state_value)
+            state_value = self.fc2(state_value)
+            state_value = self.bn2(state_value)
+            if self.number_layers > 2:
+                state_value = F.relu(state_value)
+                state_value = self.fc3(state_value)
+                state_value = self.bn3(state_value)
 
-            if layer < self.number_layers:
-                state_value = self.layers[layer_name](state_value)
-                state_value = self.layers[batch_norm_name](state_value)
-                if layer < self.number_layers-1:
-                    state_value = F.relu(state_value)
-                else:
-                    pass
-            
-            elif layer == self.number_layers:
-                action_value = F.relu(self.layers[layer_name](action))
-                state_action_value = F.relu(T.add(state_value, action_value))
-                state_action_value = self.layers['q'](state_action_value)
-                break
+        action_value = F.relu(self.action_value(action))
+        state_action_value = F.relu(T.add(state_value, action_value))
+        state_action_value = self.q(state_action_value)
 
         return state_action_value
 
@@ -141,61 +161,79 @@ class ActorNetwork(nn.Module):
         super(ActorNetwork, self).__init__()
 
         self.name = name
+        self.input_dims = input_dims
+        self.number_layers = len(config['hidden_layer_sizes'])
+        self.n_actions = n_actions
         self.checkpoint_file = self.name+'_ddpg'
 
-        self.number_layers = len(config['hidden_layer_sizes'])
-        self.input_dims = input_dims
-        self.layers = {}
+        self.fc1_dims = config['hidden_layer_sizes'][0]
+        if self.number_layers > 1:
+            self.fc2_dims = config['hidden_layer_sizes'][1]
+            if self.number_layers > 2:
+                self.fc3_dims = config['hidden_layer_sizes'][2]
 
-        # Here, the network is constructed according to the settings of the config file
-        for layer in range(self.number_layers + 1):
-            layer_name = 'fc' + str(layer+1)
-            batch_norm_name = 'bn'+ str(layer+1)
-            f_val = 'f' + str(layer+1)
+        self.fc1 = nn.Linear(self.input_dims, self.fc1_dims)
+        f1 = 1./np.sqrt(self.fc1.weight.data.size()[0])
+        T.nn.init.uniform_(self.fc1.weight.data, -f1, f1)
+        T.nn.init.uniform_(self.fc1.bias.data, -f1, f1)
+        self.bn1 = nn.LayerNorm(self.fc1_dims)
 
-            if layer == 0: # If first layer, use input_dims
-                self.layers[layer_name] = nn.Linear(self.input_dims, config['hidden_layer_sizes'][0])
-                f1 = 1./np.sqrt(self.layers[layer_name].weight.data.size()[0])
-                T.nn.init.uniform_(self.layers[layer_name].weight.data, -f1, f1) 
-                T.nn.init.uniform_(self.layers[layer_name].bias.data, -f1, f1) 
-                self.bn1 = nn.LayerNorm(config['hidden_layer_sizes'][0])
-                self.layers[batch_norm_name] = nn.LayerNorm(config['hidden_layer_sizes'][0])
+        if self.number_layers == 1: # Network architecture in case of single layer
+            f2 = 0.003
+            self.mu = nn.Linear(self.fc1_dims, self.n_actions)
+            T.nn.init.uniform_(self.mu.weight.data, -f2, f2)
+            T.nn.init.uniform_(self.mu.bias.data, -f2, f2)
 
-            elif layer == self.number_layers: # If last layer, use n_actions
-                self.layers[layer_name] = nn.Linear(config['hidden_layer_sizes'][self.number_layers-1], n_actions)
-                f_last = config['f_last']
-                T.nn.init.uniform_(self.layers[layer_name].weight.data, -f_last, f_last) 
-                T.nn.init.uniform_(self.layers[layer_name].bias.data, -f_last, f_last) 
-            
-            else:
-                self.layers[layer_name] = nn.Linear(config['hidden_layer_sizes'][layer-1], \
-                    config['hidden_layer_sizes'][layer])
-                self.layers[f_val] = 1./np.sqrt(self.layers[layer_name].weight.data.size()[0])
-                T.nn.init.uniform_(self.layers[layer_name].weight.data, \
-                    -self.layers[f_val], self.layers[f_val]) 
-                T.nn.init.uniform_(self.layers[layer_name].bias.data, \
-                    -self.layers[f_val], self.layers[f_val]) 
-                self.layers[batch_norm_name] = nn.LayerNorm(config['hidden_layer_sizes'][layer])
+        elif self.number_layers == 2: # Network architecture in case of double layers
+            self.fc2 = nn.Linear(self.fc1_dims, self.fc2_dims)
+            f2 = 1./np.sqrt(self.fc2.weight.data.size()[0])
+            T.nn.init.uniform_(self.fc2.weight.data, -f2, f2)
+            T.nn.init.uniform_(self.fc2.bias.data, -f2, f2)
+            self.bn2 = nn.LayerNorm(self.fc2_dims)
 
-        self.optimizer = optim.Adam(self.parameters(), lr=config['lr'])
+            f3 = 0.003
+            self.mu = nn.Linear(self.fc2_dims, self.n_actions)
+            T.nn.init.uniform_(self.mu.weight.data, -f3, f3)
+            T.nn.init.uniform_(self.mu.bias.data, -f3, f3)
+        
+        elif self.number_layers == 3: # Network architecture in case of triple layers
+            self.fc2 = nn.Linear(self.fc1_dims, self.fc2_dims)
+            f2 = 1./np.sqrt(self.fc2.weight.data.size()[0])
+            T.nn.init.uniform_(self.fc2.weight.data, -f2, f2)
+            T.nn.init.uniform_(self.fc2.bias.data, -f2, f2)
+            self.bn2 = nn.LayerNorm(self.fc2_dims)
 
-        self.device = 'cpu'
+            self.fc3 = nn.Linear(self.fc2_dims, self.fc3_dims)
+            f3 = 1./np.sqrt(self.fc3.weight.data.size()[0])
+            T.nn.init.uniform_(self.fc3.weight.data, -f3, f3)
+            T.nn.init.uniform_(self.fc3.bias.data, -f3, f3)
+            self.bn3 = nn.LayerNorm(self.fc3_dims)
+
+            f4 = 0.003
+            self.mu = nn.Linear(self.fc3_dims, self.n_actions)
+            T.nn.init.uniform_(self.mu.weight.data, -f4, f4)
+            T.nn.init.uniform_(self.mu.bias.data, -f4, f4)
+
+        self.optimizer = optim.Adam(self.parameters(), lr=config['alpha'])
+        self.device = T.device('cuda:0' if T.cuda.is_available() else 'cpu')
+
         self.to(self.device)
 
     def forward(self, state):
-        x = state
+        x = self.fc1(state)
+        x = self.bn1(x)
+        x = F.relu(x)
 
-        for layer in range(self.number_layers+1):
-            layer_name = 'fc' + str(layer+1)
-            batch_norm_name = 'bn'+ str(layer+1)
-            if layer == self.number_layers:
-                break
-            else:
-                x = self.layers[layer_name](x)
-                x = self.layers[batch_norm_name](x)
+        if self.number_layers > 1:
+            x = self.fc2(x)
+            x = self.bn2(x)
+            x = F.relu(x)
+            if self.number_layers > 2:
+                x = self.fc3(x)
+                x = self.bn3(x)
                 x = F.relu(x)
 
-        x = T.tanh(self.layers[layer_name](x))
+        x = T.tanh(self.mu(x))
 
         return x
 
