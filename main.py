@@ -6,18 +6,21 @@ from datetime import datetime
 
 filename = 'config.json'
 
-learning_rates = [0.0025, 0.00025, 0.00025]
+#learning_rates = [0.0025, 0.00025, 0.00025]
 
-tau_values = [0.1, 0.001, 0.0001]
+tau_values = [0.001]
 
-architectures = [[25], # Single layer, very small number of neurons
-                [250], # Singe layer, medium number of neurons
-                [1000], # Single layer, large number of neurons
-                [40, 30], # Double layer, small number of neurons
-                [400, 300], # Double layer, medium number of neurons and the architecture used in the DDPG paper
-                [1000, 800], # Double layer, large number of neurons
-                [40, 40, 25], # Quad layer, small number of neurons
-                [500, 400, 250]] # Quad layer, large number of neurons
+architectures = [[400, 300], [400, 300]]
+
+
+                # [[25], # Single layer, very small number of neurons
+                # [250], # Singe layer, medium number of neurons
+                # [1000], # Single layer, large number of neurons
+                # [40, 30], # Double layer, small number of neurons
+                # [400, 300], # Double layer, medium number of neurons and the architecture used in the DDPG paper
+                # [1000, 800], # Double layer, large number of neurons
+                # [40, 40, 25], # Triple layer, small number of neurons
+                # [500, 400, 250]] # Triple layer, large number of neurons
 
 tau_index = 0
 lr_index = 0
@@ -40,42 +43,29 @@ for tau in tau_values:
     time.sleep(5)
 
     lr_index = 0
-# Loop over different learning rates
-    for lr in learning_rates:
-        lr_index += 1
-        print("Learning rate: ", lr)
+
+    arch_index = 0
+    # Loop over different architectures
+    for architecture in architectures:
+        arch_index += 1
+        print("Architecture: ", architecture)
+
+        save_name = os.path.join("results","Results_t" + str(tau_index) + "l" + str(lr_index) + "a" + str(arch_index))
 
         with open(filename) as f:
             config = json.load(f)
+        
+        config["settings"]["agent"]["network"]["hidden_layer_sizes"] = \
+            architecture
 
-        config["settings"]["agent"]["network"]["lr"] = lr
+        config["settings"]["agent"]["save_directory"] = save_name
+        
         json_file = open(filename, "w")
         json.dump(config, json_file)
         json_file.close()
         time.sleep(5)
 
-        arch_index = 0
-        # Loop over different architectures
-        for architecture in architectures:
-            arch_index += 1
-            print("Architecture: ", architecture)
-
-            save_name = os.path.join("results","Results_t" + str(tau_index) + "l" + str(lr_index) + "a" + str(arch_index))
-
-            with open(filename) as f:
-                config = json.load(f)
-            
-            config["settings"]["agent"]["network"]["hidden_layer_sizes"] = \
-                architecture
-
-            config["settings"]["agent"]["save_directory"] = save_name
-            
-            json_file = open(filename, "w")
-            json.dump(config, json_file)
-            json_file.close()
-            time.sleep(5)
-
-            LunarLanderMain(filename) # Execute training
+        LunarLanderMain(filename) # Execute training
 
 print("Experiments finished!")
-print("Total experiment time is: ", begin_time -  datetime.now())
+print("Total experiment time is: ", datetime.now() - begin_time)

@@ -5,7 +5,6 @@ import numpy as np
 from utils import getConfig, saveConfig, plotLearning, displayTimeEstimate, saveScores
 from datetime import datetime
 from pathlib import Path
-import csv
 
 def LunarLanderMain(config_name):
     config = getConfig(config_name)
@@ -22,7 +21,8 @@ def LunarLanderMain(config_name):
 
     agent = Agent(config['settings']['agent'],env)
 
-    np.random.seed(0)
+    #agent.loadmodels()
+    np.random.seed(config['settings']['seed'])
 
     time_checkpoints = [datetime.now()]
     score_history = []

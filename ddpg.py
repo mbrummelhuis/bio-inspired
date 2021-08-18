@@ -98,7 +98,7 @@ class CriticNetwork(nn.Module):
                     -self.layers[f_val], self.layers[f_val]) 
                 self.layers[batch_norm_name] = nn.LayerNorm(config['hidden_layer_sizes'][layer])
 
-        self.optimizer = optim.Adam(self.parameters(), lr=config['lr'])
+        self.optimizer = optim.Adam(self.parameters(), lr=config['beta'])
 
         self.device = 'cpu'
         self.to(self.device)
