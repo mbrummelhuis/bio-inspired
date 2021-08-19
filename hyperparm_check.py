@@ -23,14 +23,25 @@ arch_index = 0
 begin_time = datetime.now()
 times =[]
 
+# Set architecture to default value
+with open(filename) as f:
+    config = json.load(f)
+
+config["settings"]["agent"]["network"]["hidden_layer_sizes"] = \
+    architecture
+json_file = open(filename, "w")
+json.dump(config, json_file)
+json_file.close()
+time.sleep(5)
+
 for batch_size in batch_size_values:
     batch_index +=1
-    print("Batch size: ", tau)
+    print("Batch size: ", batch_size)
 
     with open(filename) as f:
         config = json.load(f)
 
-    config["settings"]["agent"]["batch_size"] = tau
+    config["settings"]["agent"]["batch_size"] = batch_size
     json_file = open(filename, "w")
     json.dump(config, json_file)
     json_file.close()
@@ -44,6 +55,8 @@ for batch_size in batch_size_values:
         with open(filename) as f:
             config = json.load(f)
 
+        save_name = os.path.join("results","Results_hypercheck_t" + str(tau_index)  + "bs" + str(batch_index))
+        config["settings"]["agent"]["save_directory"] = save_name
         config["settings"]["agent"]["tau"] = tau
         json_file = open(filename, "w")
         json.dump(config, json_file)
@@ -51,21 +64,6 @@ for batch_size in batch_size_values:
         time.sleep(5)
 
         new_arch_begin_time = datetime.now()
-
-        save_name = os.path.join("results","Results_hypercheck_t" + str(tau_index)  + "bs" + str(batch_index))
-
-        with open(filename) as f:
-            config = json.load(f)
-        
-        config["settings"]["agent"]["network"]["hidden_layer_sizes"] = \
-            architecture
-
-        config["settings"]["agent"]["save_directory"] = save_name
-        
-        json_file = open(filename, "w")
-        json.dump(config, json_file)
-        json_file.close()
-        time.sleep(5)
 
         LunarLanderMain(filename) # Execute training
 
