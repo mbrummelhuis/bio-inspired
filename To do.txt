@@ -1,4 +1,5 @@
 REPORT
+- Write about relevance of LunarLander environment to real world applications (maybe cite something about landing with divergence and optical flow from mavlab)
 - Describe DPG in related work
 - Read up on DDPG and provide short explanation in report
 - Report results

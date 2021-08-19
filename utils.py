@@ -95,6 +95,7 @@ def saveScoresAndTime(scores,time,save_dir=None):
 
     Input
     scores      lst     List of scores acquired during training
+    time        str     String containing length of time of run
     save_dir    str     Name of the directory in which to save the csv file      
     '''
 
