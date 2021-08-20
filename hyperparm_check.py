@@ -69,5 +69,7 @@ for batch_size in batch_size_values:
 
         times.append(str(datetime.now()-new_arch_begin_time))
 
+    tau_index = 0
+
 print("Experiments finished!")
 print("Total experiment time is: ", datetime.now() - begin_time)
