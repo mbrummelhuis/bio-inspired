@@ -1,11 +1,11 @@
 from ddpg_torch import Agent
 import gym
 import numpy as np
-from utils import plotLearning
+from utils import plotLearning, saveScoresAndTime
 from datetime import datetime
 
 times = []
-for i in range(3):
+for n in range(3):
     begin_time = datetime.now()
 
     env = gym.make('LunarLanderContinuous-v2')
@@ -36,11 +36,14 @@ for i in range(3):
         print('episode ', i, 'score %.2f' % score,
             'trailing 100 games avg %.3f' % np.mean(score_history[-100:]))
 
-    filename = 'LunarLander-alpha000025-beta00025-400-300-'+str(i)+'.png'
+    filename = 'LunarLander-alpha000025-beta00025-400-300-'+str(n)+'.png'
+    save_dir = 'scores'+str(n)+'.csv'
     plotLearning(score_history, filename, window=100)
 
     times.append(str(datetime.now()-begin_time))
+    saveScoresAndTime(score_history, str(datetime.now()-begin_time), save_dir=save_dir)
     print("Done! Time: ", datetime.now()-begin_time)
+
 
 print("All runs done!")
 print("Took: ", times)
