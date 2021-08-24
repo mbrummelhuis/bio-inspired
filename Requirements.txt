@@ -3,5 +3,6 @@ numpy
 pathlib             
 datetime            
 gym[box2d]
+pybullet (required for box2d)
 json
 matplotlib

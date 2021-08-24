@@ -55,7 +55,7 @@ for batch_size in batch_size_values:
         with open(filename) as f:
             config = json.load(f)
 
-        save_name = os.path.join("results","Results_hypercheck_t" + str(tau_index)  + "bs" + str(batch_index))
+        save_name = os.path.join("results_hypercheck","Results_hypercheck_t" + str(tau_index)  + "bs" + str(batch_index))
         config["settings"]["agent"]["save_directory"] = save_name
         config["settings"]["agent"]["tau"] = tau
         json_file = open(filename, "w")

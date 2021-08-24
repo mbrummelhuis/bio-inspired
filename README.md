@@ -1,13 +1,19 @@
-Implementation and ablation study of the DDPG Reinforcement Learning algorithm for OpenAI gym's LunarLanderContinuous-v2 environment.
+# Bio-inspired intelligence and learning for aerospace applications
 
 This is the git repository used for the assignment of the course AE4350 Bio-Inspired Intelligence and Learning for Aerospace Applications from the faculty of Aerospace Engineering at Delft University of Technology.
-It follows an implementation of the DDPG paper by DeepMind, using the code from Phil Tabor (link his repo), along with some alterations I made myself for this assignment.
-Below is an overview of the code structure and in short what I changed from mr. Tabor's code.
+It follows an implementation of the DDPG paper by DeepMind, using the code from Phil Tabor ([link](https://github.com/philtabor/Youtube-Code-Repository/tree/master/ReinforcementLearning/PolicyGradient/DDPG/pytorch/lunar-lander)), along with some alterations I made myself for this assignment.
+Below is an overview of the code structure, how it works and in short what I changed from mr. Tabor's code.
 
-config.json
-This file contains all the hyperparameters governing the neural network architecture and training.
+## Files
+* config.json: This file contains all the hyperparameters governing the neural network architecture and training. This is changed by the code for the main experiment and hyperparameter check.
+* ddpg.py: This file contains the main network classes for the implementation of the DDPG algorithm.
+* LunarLanderMain.py: This file contains the instantiation of the agent as defined in ddpg.py and creates the 'LunarLanderContinuous-v2' environment, cycles through the episodes and through the timesteps within the episode and trains the agent on the environment.
+* main.py: This file changes the config file and calls LunarLanderMain for each alteration of the config file to carry out the main experiment.
+* validation.py: This file changes the config file and calls LunarLanderMain for the validation experiment.
+* hyperparam_check.py: This file changes the config file hyperparameters and calls LunarLanderMain for each hyperparameter iteration for the sensitivity analysis (hyperparameter check).
+* utils.py: Contains some utility functions such as saving and plotting.
 
-How to use
+## How to use
 To reproduce the results presented in the report (PDF in the repository), simply run main.py with the preset hyperparameters. 
 
 Further, control of the architecture and other hyperparameters mainly work through the config file, so changing the architecture (defined as a list of the number of nodes per hidden layer,
@@ -16,14 +22,3 @@ so [10, 80, 3] will create 3 hidden layers with 10 nodes in layer 1, 80 nodes in
 If you want to train only one time with no variation to hyperparameters or network architecture, set these in the config file and run the LunarLanderMain.py file.
 
 Be aware as results may be overwritten, results in the github repository are the results from the run as described in the report.
-
-CPU vs GPU implementation
-Unfortunately, due to the dictionary-based building of the layers in the ActorNetwork and CriticNetwork classes, it is not possible to move the network reliably \
-to the GPU, and therefore it is only possible to run the networks on the CPU. An interesting observation is that the CPU implementation seems to be quite a bit \
-faster for smaller networks than the GPU implementation.
-
-
-Credits to MachineLearningwithPhil for programming tutorials
-Recommendations:
-https://www.youtube.com/watch?v=wc-FxNENg9U&ab_channel=MachineLearningwithPhil
-https://www.youtube.com/watch?v=6Yd5WnYls_Y&ab_channel=MachineLearningwithPhil

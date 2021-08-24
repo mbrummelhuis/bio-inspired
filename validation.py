@@ -27,7 +27,7 @@ for architecture in architectures:
     arch_index += 1
     print("Architecture: ", architecture)
 
-    save_name = os.path.join("results","Results_val_t" + str(tau_index)  + "a" + str(arch_index))
+    save_name = os.path.join("results_val","Results_val_t" + str(tau_index)  + "a" + str(arch_index))
 
     with open(filename) as f:
         config = json.load(f)

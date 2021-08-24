@@ -31,9 +31,6 @@ arch_index = 0
 begin_time = datetime.now()
 times =[]
 # Set hyperparams to default values
-tau_index +=1
-print("Tau: ", tau)
-
 with open(filename) as f:
     config = json.load(f)
 
@@ -46,31 +43,32 @@ json.dump(config, json_file)
 json_file.close()
 time.sleep(5)
 
-arch_index = 0
-# Loop over different architectures
-for architecture in architectures:
-    new_arch_begin_time = datetime.now()
-    arch_index += 1
-    print("Architecture: ", architecture)
+for n in range(3): # We want to run main experiment three times
+    arch_index = 0
+    # Loop over different architectures
+    for architecture in architectures:
+        new_arch_begin_time = datetime.now()
+        arch_index += 1
+        print("Architecture: ", architecture)
 
-    save_name = os.path.join("results","Results_main_a" + str(arch_index))
+        save_name = os.path.join("results_main"+str(n),"Results_main_a" + str(arch_index))
 
-    with open(filename) as f:
-        config = json.load(f)
-    
-    config["settings"]["agent"]["network"]["hidden_layer_sizes"] = \
-        architecture
+        with open(filename) as f:
+            config = json.load(f)
+        
+        config["settings"]["agent"]["network"]["hidden_layer_sizes"] = \
+            architecture
 
-    config["settings"]["agent"]["save_directory"] = save_name
-    
-    json_file = open(filename, "w")
-    json.dump(config, json_file)
-    json_file.close()
-    time.sleep(5)
+        config["settings"]["agent"]["save_directory"] = save_name
+        
+        json_file = open(filename, "w")
+        json.dump(config, json_file)
+        json_file.close()
+        time.sleep(5)
 
-    LunarLanderMain(filename) # Execute training
+        LunarLanderMain(filename) # Execute training
 
-    times.append(str(datetime.now()-new_arch_begin_time))
+        times.append(str(datetime.now()-new_arch_begin_time))
 
-print("Experiments finished!")
-print("Total experiment time is: ", datetime.now() - begin_time)
+    print("Experiments finished!")
+    print("Total experiment time is: ", datetime.now() - begin_time)
