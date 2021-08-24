@@ -1,7 +1,7 @@
 # Bio-inspired intelligence and learning for aerospace applications
 
 This is the git repository used for the assignment of the course AE4350 Bio-Inspired Intelligence and Learning for Aerospace Applications from the faculty of Aerospace Engineering at Delft University of Technology.
-It follows an implementation of the DDPG paper by DeepMind, using the code from Phil Tabor ([link](https://github.com/philtabor/Youtube-Code-Repository/tree/master/ReinforcementLearning/PolicyGradient/DDPG/pytorch/lunar-lander)), along with some alterations I made myself for this assignment.
+It follows an implementation of the DDPG paper by DeepMind, using the code from Dr. Phil Tabor ([link](https://github.com/philtabor/Youtube-Code-Repository/tree/master/ReinforcementLearning/PolicyGradient/DDPG/pytorch/lunar-lander)), along with some alterations I made myself for this assignment.
 Below is an overview of the code structure, how it works and in short what I changed from mr. Tabor's code.
 
 ## Files
